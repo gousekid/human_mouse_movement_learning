@@ -6,6 +6,18 @@ from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import os
 
+def normalize_data(data, min_val=None, max_val=None):
+    """
+    Perform Min-Max scaling on the data.
+    """
+    if min_val is None or max_val is None:
+        min_val = np.min(data, axis=0)
+        max_val = np.max(data, axis=0)
+
+    normalized_data = (data - min_val) / (max_val - min_val)
+    return normalized_data, min_val, max_val
+
+
 # 데이터 준비
 def preprocess_mouse_data_with_padding(merged_data):
     # 데이터 로드
@@ -19,7 +31,6 @@ def preprocess_mouse_data_with_padding(merged_data):
 
     for session_id in session_ids:
         session_data = df[df['session_id'] == session_id]
-        
         # 시작점과 끝점 추출
         start_point = session_data[session_data['label'] == 'start'][['x', 'y']].values[0]
         end_point = session_data[session_data['label'] == 'end'][['x', 'y']].values[0]
@@ -80,18 +91,18 @@ for csv_file in csv_files:
 merged_data = pd.concat(all_data, ignore_index=True)
 
 
-
 # 데이터 로드 및 전처리
 X, Y = preprocess_mouse_data_with_padding(merged_data)
 
-# 데이터 형태 확인
-X.shape, Y.shape
+X, min_val, max_val = normalize_data(X)
+Y, min_val, max_val = normalize_data(Y)
+
 # 데이터 형태 조정
 X_padded_reshaped = X.reshape(X.shape[0], X.shape[1], 1)
 
 # 모델 구성
 model = Sequential()
-model.add(LSTM(50, input_shape=(X_padded_reshaped.shape[1], 1)))
+model.add(LSTM(100, input_shape=(X_padded_reshaped.shape[1], 2)))
 model.add(Dense(2, activation='linear'))  # 2개의 출력 (x, y 좌표)
 
 # 모델 컴파일

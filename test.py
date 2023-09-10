@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 
 # 1. 저장된 모델 불러오기
-model_path = './model/mouseprediction.h5'
+model_path = './model/mouseprediction.keras'
 loaded_model = load_model(model_path)
 
 # 2. 특정 시작 위치에서 목표 위치까지의 예측 경로 계산
